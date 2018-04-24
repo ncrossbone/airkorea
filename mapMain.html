@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html LANG="ko"> 
+<head> 
+    <meta charset="UTF-8">
+    <title>대기질</title>
+    <script type="text/javascript" src="./js/lib/jquery-1.11.2.min.js"></script>
+    <script type="text/javascript" src="./js/lib/common.js"></script>
+<!--     <script src="https://unpkg.com/vue/dist/vue.js"></script> -->
+    <script type="text/javascript" src="./js/lib/ol.js"></script>
+    <script type="text/javascript" src="./js/lib/airKoreaLayer.js"></script>
+    <script type="text/javascript" src="./js/lib/vworldLayer.js"></script>
+    <script type="text/javascript" src="./js/lib/airKoreaMap.js"></script>
+    <script type="text/javascript" src="./js/mapMain.js"></script>
+<!--     <script type="text/javascript" src='./js/PeriodVueComponent.js'></script> -->
+    <style>
+		.accordion {
+		    background-color: #eee;
+		    color: #444;
+		    cursor: pointer;
+		    padding: 18px;
+		    width: 100%;
+		    border: none;
+		    text-align: left;
+		    outline: none;
+		    font-size: 15px;
+		    transition: 0.4s;
+		}
+		
+		.active, .accordion:hover {
+		    background-color: #ccc; 
+		}
+		
+		.panel {
+		    padding: 9px 9px 9px 9px;
+		    display: none;
+		    background-color: white;
+		}
+		
+		.btn {
+		    border: none; /* Remove borders */
+		    color: white; /* Add a text color */
+		    padding: 14px 14px 14px 14px; /* Add some padding */
+		    cursor: pointer; /* Add a pointer cursor on mouse-over */
+		    margin: 2px;
+		}
+		
+		.success {background-color: #4CAF50;} /* Green */
+		.success:hover {background-color: #46a049;}
+		
+		.info {background-color: #2196F3;} /* Blue */
+		.info:hover {background: #0b7dda;}
+		
+		.warning {background-color: #ff9800;} /* Orange */
+		.warning:hover {background: #e68a00;}
+		
+		.danger {background-color: #f44336;} /* Red */ 
+		.danger:hover {background: #da190b;}
+		
+		.default {background-color: #e7e7e7; color: black;} /* Gray */ 
+		.default:hover {background: #ddd;}
+	</style>
+	
+</head>  
+
+<body>
+	<div id="ctrlDiv" style="width:370px;  position: absolute; top: 10px; right: 10px; z-index: 100; outline: auto;">
+		<button class="accordion">배경맵</button>
+		<div class="panel">
+		  	<span><input type="button" class="btn success" id="defaultMapBtn" onclick="$mapMain.showDefautMap();" value="기본지도"></span>
+		  	<span><input type="button" class="btn default" id="airMapBtn" onclick="$mapMain.showAirMap();" value="위성지도"></span>
+			<span><input type="button" class="btn default" id="grayMapBtn" onclick="$mapMain.showGrayMap();" value="백지도"></span>
+<!-- 			<span><input type="button" class="btn default" id="grayMapBtn" onclick="$mapMain.hideBaseMap();" value="백지도"></span> -->
+		</div>
+		<button class="accordion">행정구역</button>
+		<div class="panel">
+		  	<span><input type="button" class="btn default" id="disMapBtn1" onclick="$mapMain.showDistrictLayer(1);" value="시도"></span>
+		  	<span><input type="button" class="btn default" id="disMapBtn2" onclick="$mapMain.showDistrictLayer(2);" value="시군구"></span>
+			<span><input type="button" class="btn default" id="disMapBtn3" onclick="$mapMain.showDistrictLayer(3);" value="읍면동"></span>
+			<span><input type="button" class="btn default" id="disMapBtn4" onclick="$mapMain.showDistrictLayer(4);" value="동리"></span>
+		</div>
+		<button class="accordion">역궤적</button>
+		<div class="panel">
+			<span><input type="button" class="btn success"  id="playBtn" onclick="$mapMain.play();" value="시작"></span>
+			<span><input type="button" class="btn danger" id="stopBtn" onclick="$mapMain.stop();" value="정지"></span>
+			<span><input type="button" class="btn info"  id="labelBtn" onclick="$mapMain.onOff();" value="Label(on/off)"></span>
+			<div></div>
+			<span> 시간간격 : </span>
+			<span><input type=text id="playInterval" value="700" style="width:50px;"></span>
+			<div></div>
+            <span> 측정시간 : </span><span><input type="text" readonly="readonly" id="currentDate"> </span>
+            <div></div>
+			<span><input type="text" readonly="readonly" id="firstAndLastDate" style="display: none; width:300px;"> </span>
+		</div>
+		
+		<button class="accordion">격자</button>
+		<div class="panel">
+		  	<span><input type="button" class="btn info" id="playLattice" onclick="$mapMain.showLattice();" value="격자 on"></span>
+			<span><input type="button" class="btn default" id="playLattice" onclick="$mapMain.hideLattice();" value="격자 off"></span>
+			<span><input type="button" class="btn success" id="playLattice" onclick="$mapMain.playLattice();" value="격자시작"></span>
+			<span><input type="button" class="btn danger" id="stopLattice" onclick="$mapMain.stopLattice();" value="격자정지"></span>
+			<div></div>
+			<span > 측정시간 : </span><span><input type="text" readonly="readonly" id="latticeDate" value="2018-01-03 06시"> </span>
+			<span > 속성 : </span><span><select id="latValSel"><option value="real">CO</option> <option value="real2">O3</option></select> </span>
+		</div>
+		<button class="accordion">시설물</button>
+		<div class="panel">
+		  	<span><input type="button" class="btn info" id="latticeBtn" onclick="$mapMain.addFac();" value="시설물 on"></span>
+		  	<span><input type="button" class="btn success" onclick="$mapMain.playFac();" value="시설물(start/end)"></span>
+		  	<span><input type="button" class="btn danger" onclick="$mapMain.labelOnOffFac();" value="Label(on/off)"></span>
+		  	<div></div>
+            <span> 측정시간 : </span><span><input type="text" readonly="readonly" id="currentFacDate"> </span>
+		</div>
+		<button class="accordion">heatmap</button>
+		<div class="panel">
+			<span><input type="button" class="btn info" id="heatMapBtn" onclick="$mapMain.addHeatMap();" value="HeatMap On"></span>
+			<span><input type="button" class="btn default" id="heatMapOffBtn" onclick="$mapMain.offHeatMap();" value="HeatMap Off"></span>
+			<span><input type="button" class="btn success" id="heatMapStartBtn" onclick="$mapMain.startHeatMap();" value="HeatMap Start"></span>
+			<span><input type="button" class="btn danger" id="heatMapStopBtn" onclick="$mapMain.stopHeatMap();" value="HeatMap Stop"></span>
+			<br>
+			<span > 측정시간 : </span><span><input type="text" readonly="readonly" id="heatMapDate" value="2018-01-03 06시"> </span>
+			<br>
+			<label>radius</label>
+			<input id="radius" type="range" min="1" max="50" step="1" value="5"/><br>
+			<label>blur&nbsp;&nbsp;&nbsp;</label>
+			<input id="blur" type="range" min="1" max="50" step="1" value="15"/>
+		</div>
+		<button class="accordion">레이어</button>
+		<div class="panel">
+			<div id="vworldWmsDiv">
+			
+			</div>
+		</div>
+	</div>
+	
+	<div id="map" style="width:1000px; height: 800px;" ></div>
+	<div id="period" :style="{style}">
+<!-- 		<my-component></my-component> -->
+	</div>
+	<div style="position: absolute; bottom: 200px; left:20px;"><img id="wmsLegendImg"></div>
+	<script >
+	$(document).ready(function() {    
+		$mapMain.init();
+		
+// 		_periodVue.init('period');
+	});
+	
+	var acc = document.getElementsByClassName("accordion");
+	for (var i = 0; i < acc.length; i++) {
+	    acc[i].addEventListener("click", function() {
+	        this.classList.toggle("active");
+	        var panel = this.nextElementSibling;
+	        panel.style.display = panel.style.display == 'block' ? 'none':'block';
+	    });
+	}
+// 
+	
+	</script>
+</body>
+</html>

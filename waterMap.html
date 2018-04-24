@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html LANG="ko"> 
+<head> 
+    <meta charset="UTF-8">
+    <title>금호강</title>
+    
+    
+    <link rel="stylesheet" media="all" href="https://js.arcgis.com/3.22/esri/css/esri.css">
+    <link rel="stylesheet" media="all" href="https://js.arcgis.com/3.22/dijit/themes/claro/claro.css">
+    
+    <script type="text/javascript" src="https://js.arcgis.com/3.22/"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    
+    <script type="text/javascript" src="./js_water/waterMap.js"></script>
+</head>  
+
+<body>
+	<div id="map" style="width:1200px; height:800px;" ></div>
+	<div id="playBtnDiv" style="position: absolute; top:10px; left:10px;">
+		<span><input type="button" id="defaultMapBtn" onclick="$mapMain.showDefautMap();" value="기본지도"></span>
+	</div>
+</body>
+<script >
+	$(document).ready(function() {    
+		dojo.ready($waterMap.init);
+	});
+</script>
+</html>
